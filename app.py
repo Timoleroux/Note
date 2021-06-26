@@ -8,9 +8,9 @@ class App(QtWidgets.QWidget):
         super().__init__()
         self.setWindowTitle("Note")
         self.setWindowIcon(QtGui.QIcon('C:/Users/timol/OneDrive/Documents/GitHub/Note/data/icon.ico'))
-
         self.component()
         self.css()
+        self.get_note()
 
     def component(self):
         self.main_layout = QtWidgets.QHBoxLayout(self)
@@ -19,7 +19,7 @@ class App(QtWidgets.QWidget):
         self.title = QtWidgets.QLineEdit()
         self.text_area = QtWidgets.QTextEdit()
         self.save = QtWidgets.QPushButton("Sauvegarder")
-        self.save.clicked.connect(self.add_movie)
+        self.save.clicked.connect(self.add_note)
         self.delete = QtWidgets.QPushButton("Supprimer")
         self.note_list = QtWidgets.QListWidget()
 
@@ -39,9 +39,14 @@ class App(QtWidgets.QWidget):
         background-color: #ffffff;
         """)
 
-    def add_movie(self):
+    def add_note(self):
         res = self.title.text()
         self.note_list.addItem(str(res))
+        add_note_json(list(res))
+
+    def get_note(self):
+        self.note_list.addItems(get_note_json())
+        
 
 
 
