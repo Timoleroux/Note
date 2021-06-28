@@ -1,7 +1,22 @@
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QWaitCondition, Qt
 import os
-from note import *
+import json
+
+PATH = "C:/Users/timol/OneDrive/Documents/GitHub/Note/data/data.json"
+JSON_LIST = ["TEST 1", "TEST 2"]
+
+def add_note_json(content):
+    with open(PATH, "w") as f:
+        final = KSOn
+        json.dump(JSON_LIST, f, indent=4)
+
+def get_note_json():
+    with open(PATH, "r") as f:
+        the_list = json.load(f)
+        for i in the_list:
+            res = the_list
+            return res
 
 class App(QtWidgets.QWidget):
     def __init__(self):
@@ -40,12 +55,12 @@ class App(QtWidgets.QWidget):
         """)
 
     def add_note(self):
-        res = self.title.text()
-        self.note_list.addItem(str(res))
-        add_note_json(list(res))
+        res = str(self.title.text())
+        self.note_list.addItem(res)
+        add_note_json(res)
 
     def get_note(self):
-        self.note_list.addItems(get_note_json())
+        self.note_list.addItem(str(get_note_json))
         
 
 
