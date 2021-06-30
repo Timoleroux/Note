@@ -3,7 +3,7 @@ from PySide2.QtCore import QWaitCondition, Qt
 import os
 import json
 
-PATH = "C:/Users/timol/OneDrive/Documents/GitHub/Note/data/data.json"
+PATH = "C:/Users/timol/OneDrive/Documents/GitHub/Note/TEST/dataTEST/dataTEST.json"
 
 class App(QtWidgets.QWidget):
     def __init__(self):
@@ -79,9 +79,12 @@ class App(QtWidgets.QWidget):
         with open(PATH, "r") as f:
             json_dict = json.load(f)
         while locate != target:
-            locate = json_dict[str(target_number)]["title"]
+            print(type(target))
+            print(type(json_dict))
+            locate = json_dict[str(target_number)]["title"] # ERROR : why ?
             target_number += 1
         target_number -= 1
+        print(target_number)
 
     def json_remove(self):
         self.json_load()
@@ -92,7 +95,11 @@ class App(QtWidgets.QWidget):
 
     def note_load(self):
         self.json_load()
-        v = 0
+        first_key = list(json_dict.keys())
+        print(first_key)
+        first_key = str(first_key[0])
+        print(first_key)
+        v = int(first_key)
         for i in json_dict:
             self.note_list.addItem(json_dict[str(v)]["title"])
             v += 1
@@ -109,17 +116,8 @@ class App(QtWidgets.QWidget):
         for item in list_items:
             self.note_list.takeItem(self.note_list.row(item))
 
-
-
-
-
-
-
-
-
-
-
-
+    def note_display():
+        pass
 
 app = QtWidgets.QApplication([])
 win = App()
