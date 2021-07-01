@@ -1,10 +1,6 @@
 {
-    "1": {
-        "title": "add",
-        "content": "hello world"
-    },
-    "2": {
-        "title": "add",
-        "content": "hello world"
+    "0": {
+        "title": "How to use this app ?",
+        "content": "It's a simply app of note. All notes are saves in a json file."
     }
 }

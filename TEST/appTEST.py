@@ -18,24 +18,27 @@ class App(QtWidgets.QWidget):
         self.main_layout = QtWidgets.QHBoxLayout(self)
         self.left_layout = QtWidgets.QVBoxLayout(self)
         self.right_layout = QtWidgets.QVBoxLayout(self)
+
+        self.note_list = QtWidgets.QListWidget()
+        self.open = QtWidgets.QPushButton("Ouvir")
+        self.open.clicked.connect(self.note_open)
+        self.delete = QtWidgets.QPushButton("Supprimer")
+        self.delete.clicked.connect(self.note_remove)
+
         self.title = QtWidgets.QLineEdit()
         self.text_area = QtWidgets.QTextEdit()
         self.save = QtWidgets.QPushButton("Sauvegarder")
         self.save.clicked.connect(self.note_write)
-        self.delete = QtWidgets.QPushButton("Supprimer")
-        self.delete.clicked.connect(self.note_remove)
-        self.note_list = QtWidgets.QListWidget()
 
         self.main_layout.addLayout(self.left_layout)
         self.main_layout.addLayout(self.right_layout)
 
+        self.left_layout.addWidget(self.note_list)
+        self.left_layout.addWidget(self.open)
+        self.left_layout.addWidget(self.delete)
         self.right_layout.addWidget(self.title)
         self.right_layout.addWidget(self.text_area)
         self.right_layout.addWidget(self.save)
-
-
-        self.left_layout.addWidget(self.note_list)
-        self.left_layout.addWidget(self.delete)
 
     def css(self):
         self.setStyleSheet("""
@@ -51,40 +54,45 @@ class App(QtWidgets.QWidget):
 
     def json_load(self):
         global json_dict
-        try:
-            with open(PATH, "r") as f:
-                json_dict = json.load(f)
-            if not json_dict:
-                with open(PATH, "w") as f:
-                    json.dump({"0":{"title":"How to use this app ?", "content":"It's a simply app of note. All notes are saves in a json file."}}, f, indent=4)
-        except:
+        with open(PATH, "r") as f:
+            json_dict = json.load(f)
+            is_empty = bool(json_dict)  # if json_dict is empty return False
+        if not json_dict or is_empty == False:  # if json_dict is empty or don't exist
             with open(PATH, "w") as f:
                 json.dump({"0":{"title":"How to use this app ?", "content":"It's a simply app of note. All notes are saves in a json file."}}, f, indent=4)
-            with open(PATH, "r") as f:
-                json_dict = json.load(f)
+
+        with open(PATH, "r") as f:
+            json_dict = json.load(f)
 
     def json_write(self, title, content):
         self.json_load()
-        json_new = {"title":title, "content":content}
-        self.get_nbr_next_note()
-        json_dict.update({nbr_next_note:json_new})
-        with open(PATH, "w") as f:
-            json.dump(json_dict, f, indent=4)
+        global note_exist
+        note_exist = False
+        for i in json_dict:
+            res = json_dict[i]["title"]
+            if title == res:
+                note_exist = True
 
-    def dict_locate(self, target):
-        self.json_load()
-        global target_number
-        locate = None
-        target_number = 0
-        with open(PATH, "r") as f:
-            json_dict = json.load(f)
-        while locate != target:
-            print(type(target))
-            print(type(json_dict))
-            locate = json_dict[str(target_number)]["title"] # ERROR : why ?
-            target_number += 1
-        target_number -= 1
-        print(target_number)
+        if note_exist == False:
+            json_new = {"title":title, "content":content}
+            self.get_nbr_next_note()
+            json_dict.update({nbr_next_note:json_new})
+            with open(PATH, "w") as f:
+                json.dump(json_dict, f, indent=4)
+
+    def dict_locate(self, target): # get the ID of the note with only the title of the note
+        if target != "":
+            self.json_load()
+            global target_number
+            locate = None
+            target_number = 0
+            with open(PATH, "r") as f:
+                json_dict = json.load(f)
+            while locate != target:
+                if str(target_number) in json_dict:
+                    locate = str(json_dict[str(target_number)]["title"])
+                target_number += 1
+            target_number -= 1
 
     def json_remove(self):
         self.json_load()
@@ -96,19 +104,21 @@ class App(QtWidgets.QWidget):
     def note_load(self):
         self.json_load()
         first_key = list(json_dict.keys())
-        print(first_key)
         first_key = str(first_key[0])
-        print(first_key)
         v = int(first_key)
         for i in json_dict:
-            self.note_list.addItem(json_dict[str(v)]["title"])
+            if str(v) in json_dict:
+                self.note_list.addItem(json_dict[str(v)]["title"])
             v += 1
 
     def note_write(self):
-        resT = str(self.title.text())
-        resC = str(self.text_area.toPlainText())
-        self.note_list.addItem(resT)
-        self.json_write(resT, resC)
+            resT = str(self.title.text())
+            resC = str(self.text_area.toPlainText())
+            self.json_write(resT, resC)
+            if note_exist == False:
+                self.note_list.addItem(resT)
+            elif note_exist == True:
+                self.dict_locate(resT)
 
     def note_remove(self):
         self.json_remove()
@@ -116,8 +126,12 @@ class App(QtWidgets.QWidget):
         for item in list_items:
             self.note_list.takeItem(self.note_list.row(item))
 
-    def note_display():
-        pass
+    def note_open(self):
+        self.dict_locate(self.note_list.currentItem().text())
+        self.title.setText(json_dict[str(target_number)]["title"])
+        self.text_area.setText(json_dict[str(target_number)]["content"])
+
+
 
 app = QtWidgets.QApplication([])
 win = App()

@@ -1,0 +1,1 @@
+note = {"0":{"title":"How to use this app ?", "content":"It's a simply app of note. All notes are saves in a json file."}}
