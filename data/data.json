@@ -1,6 +1,10 @@
 {
+    "0": {
+        "title": "How to use this app ?",
+        "content": "It's a simply app of note. All notes are saves in a json file. ciyciy"
+    },
     "1": {
-        "title": "Hello",
-        "content": "world !"
+        "title": "Note 1",
+        "content": "This is a note"
     }
 }
