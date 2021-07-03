@@ -2,8 +2,8 @@ from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QWaitCondition, Qt
 import os
 import json
-from resources import default_note
-from resources import count_char
+from resources import default_note, default_new_note
+from resources import count_char    
 
 PATH = "C:/Users/timol/OneDrive/Documents/GitHub/Note/data/data.json"
 
@@ -26,12 +26,15 @@ class App(QtWidgets.QWidget):
         self.list_note.itemClicked.connect(self.note_open)
         self.btn_delete = QtWidgets.QPushButton("Supprimer")
         self.btn_delete.clicked.connect(self.note_remove)
-
+        self.label_title = QtWidgets.QLabel("Title:")
         self.le_title = QtWidgets.QLineEdit()
         self.le_title.textChanged.connect(self.note_save)
         self.le_title.setMaxLength(35)
+        self.le_title.setDisabled(True)
+        self.label_content = QtWidgets.QLabel("Content:")
         self.text_area = QtWidgets.QTextEdit()
         self.text_area.textChanged.connect(self.note_save)
+        self.text_area.setDisabled(True)
         self.btn_save = QtWidgets.QPushButton("Nouveau")
         self.btn_save.clicked.connect(self.note_write)
 
@@ -39,10 +42,12 @@ class App(QtWidgets.QWidget):
         self.main_layout.addLayout(self.right_layout)
 
         self.left_layout.addWidget(self.list_note)
+        self.left_layout.addWidget(self.btn_save)
         self.left_layout.addWidget(self.btn_delete)
+        self.right_layout.addWidget(self.label_title)
         self.right_layout.addWidget(self.le_title)
+        self.right_layout.addWidget(self.label_content)
         self.right_layout.addWidget(self.text_area)
-        self.right_layout.addWidget(self.btn_save)
 
     def load(self, is_load):  # load all elements in text_area at the starting (note_load)
         global json_dict
@@ -84,62 +89,46 @@ class App(QtWidgets.QWidget):
         note_id -= 1
         note_id = str(note_id)
 
-        return note_id
-
     def note_open(self):
-        global current_note_id
-        # --------------------------- when text is set, it active note_save so we need to disable the function during the set text------------------------
-        current_note_id = self.get_id_by_title(self.list_note.currentItem().text())
-        self.le_title.setText(json_dict[current_note_id]["title"])
-        self.text_area.setText(json_dict[current_note_id]["content"])
-        print(current_note_id)
+        global disable_save_func
+        self.le_title.setDisabled(False)
+        self.text_area.setDisabled(False)
+        disable_save_func = True
+        self.get_id_by_title(self.list_note.currentItem().text())
+        self.le_title.setText(json_dict[note_id]["title"])
+        self.text_area.setText(json_dict[note_id]["content"])
+        disable_save_func = False
         
 
     def note_write(self):
         self.load(False)
         
-        def write(title, content):
+        json_keys_list = list(json_dict.keys()) # get all the ID of the notes
+        id_new_note = json_keys_list[-1]  # get the last ID
+        id_new_note = int(id_new_note)
+        id_new_note += 1  # get the next ID 
 
-            is_note_exist = False
+        json_dict.update({id_new_note:default_new_note})  # add the new note the json_dict
 
-            for i in json_dict:  # set if the existing of the note
-                if title == json_dict[i]["title"]:
-                    is_note_exist = True
+        with open(PATH, "w") as f:
+            json.dump(json_dict, f, indent=4)  # add the note in the json file
+               
+        self.list_note.addItem(default_new_note["title"]) # add the title in the list_note
+         
+        new_content = self.text_area.toPlainText()
+        json_dict.update({note_id:{"title":self.le_title.text(), "content":new_content}})
 
-            if is_note_exist == False and self.le_title.text():  # if the note don't exist and 
-                                                                 # the title isn't empty: create it
-                json_keys_list = list(json_dict.keys()) # get all the ID of the notes
-                id_new_note = json_keys_list[-1]  # get the last ID
-                id_new_note = int(id_new_note)
-                id_new_note += 1  # get the next ID 
-                new_note = {"title":title, "content":content}  # set the new note
+        with open(PATH, "w") as f:
+            json.dump(json_dict, f, indent=4)
 
-                json_dict.update({id_new_note:new_note})  # add the note the json_dict
-
-                with open(PATH, "w") as f:
-                    json.dump(json_dict, f, indent=4)  # add the note in the json file
-                
-                self.list_note.addItem(title) # add the title in the list_note
-            
-            elif is_note_exist == True:
-                self.get_id_by_title(self.le_title.text())
-                new_content = self.text_area.toPlainText()
-                json_dict.update({note_id:{"title":self.le_title.text(), "content":new_content}})
-
-                with open(PATH, "w") as f:
-                    json.dump(json_dict, f, indent=4)
-
-            text_title = str(self.le_title.text())  # get the title for the write function  
-            text_content = str(self.text_area.toPlainText())  # get the content for the write function
-            write(text_title, text_content)
 
     def note_save(self):
         new_title = self.le_title.text()
         new_content = self.text_area.toPlainText()
         
-        if count_char(new_title) >= 1:
+        if count_char(new_title) >= 1 and disable_save_func == False:
             self.load(False)
-            json_dict.update({current_note_id:{"title":new_title, "content":new_content}})
+            json_dict.update({note_id:{"title":new_title, "content":new_content}})
 
             with open(PATH, "w") as f:
                 json.dump(json_dict, f, indent=4)

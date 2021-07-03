@@ -1,10 +1,22 @@
 {
     "0": {
-        "title": "F",
-        "content": "Hellow"
+        "title": "",
+        "content": "It's a simply app of note. All notes are saves in a json file."
     },
-    "1": {
-        "title": "There is ,o ",
-        "content": "Hellow"
+    "6": {
+        "title": "It's an other note ",
+        "content": "This is my new note."
+    },
+    "7": {
+        "title": "New not",
+        "content": "This is my new note."
+    },
+    "8": {
+        "title": "New note",
+        "content": "This is my new note."
+    },
+    "9": {
+        "title": "New note",
+        "content": "This is my new note."
     }
 }

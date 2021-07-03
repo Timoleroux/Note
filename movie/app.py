@@ -4,7 +4,7 @@ from movie import Movie, get_movies
 class App(QtWidgets.QWidget):
     def  __init__(self):
         super().__init__()
-        self.setWindowTitle("Note")
+        self.setWindowTitle("_Note_")
         self.component()
         self.actions()
         self.populate_movies()
