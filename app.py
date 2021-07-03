@@ -2,7 +2,8 @@ from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QWaitCondition, Qt
 import os
 import json
-import default
+from resources import default_note
+from resources import count_char
 
 PATH = "C:/Users/timol/OneDrive/Documents/GitHub/Note/data/data.json"
 
@@ -10,9 +11,10 @@ class App(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Note")
+        self.setMinimumSize(550, 300)
+        self.setMaximumSize(825, 450)
         self.setWindowIcon(QtGui.QIcon('C:/Users/timol/OneDrive/Documents/GitHub/Note/data/icon.ico'))
         self.component()
-        self.css()
         self.load(True)
 
     def component(self):
@@ -26,6 +28,8 @@ class App(QtWidgets.QWidget):
         self.btn_delete.clicked.connect(self.note_remove)
 
         self.le_title = QtWidgets.QLineEdit()
+        self.le_title.textChanged.connect(self.note_save)
+        self.le_title.setMaxLength(35)
         self.text_area = QtWidgets.QTextEdit()
         self.text_area.textChanged.connect(self.note_save)
         self.btn_save = QtWidgets.QPushButton("Nouveau")
@@ -40,11 +44,6 @@ class App(QtWidgets.QWidget):
         self.right_layout.addWidget(self.text_area)
         self.right_layout.addWidget(self.btn_save)
 
-    def css(self):
-        self.setStyleSheet("""
-        background-color: #ffffff;
-        """)
-
     def load(self, is_load):  # load all elements in text_area at the starting (note_load)
         global json_dict
 
@@ -53,7 +52,7 @@ class App(QtWidgets.QWidget):
              
         if not json_dict or bool(json_dict) == False:  # if there isn't note, create the default note 
             with open(PATH, "w") as f:                 # and then update the json_dict
-                json.dump(default.note, f, indent=4)
+                json.dump(default_note, f, indent=4)
             with open(PATH, "r") as f:
                 json_dict = json.load(f)
 
@@ -82,14 +81,19 @@ class App(QtWidgets.QWidget):
                     goal = str(json_dict[str(note_id)]["title"])
 
                 note_id += 1
-
         note_id -= 1
         note_id = str(note_id)
 
+        return note_id
+
     def note_open(self):
-        self.get_id_by_title(self.list_note.currentItem().text())
-        self.le_title.setText(json_dict[note_id]["title"])
-        self.text_area.setText(json_dict[note_id]["content"])
+        global current_note_id
+        # --------------------------- when text is set, it active note_save so we need to disable the function during the set text------------------------
+        current_note_id = self.get_id_by_title(self.list_note.currentItem().text())
+        self.le_title.setText(json_dict[current_note_id]["title"])
+        self.text_area.setText(json_dict[current_note_id]["content"])
+        print(current_note_id)
+        
 
     def note_write(self):
         self.load(False)
@@ -130,14 +134,18 @@ class App(QtWidgets.QWidget):
             write(text_title, text_content)
 
     def note_save(self):
-        self.get_id_by_title(self.le_title.text())
         new_title = self.le_title.text()
         new_content = self.text_area.toPlainText()
-        json_dict.update({note_id:{"title":new_title, "content":new_content}})
+        
+        if count_char(new_title) >= 1:
+            self.load(False)
+            json_dict.update({current_note_id:{"title":new_title, "content":new_content}})
 
-        with open(PATH, "w") as f:
-            json.dump(json_dict, f, indent=4)
+            with open(PATH, "w") as f:
+                json.dump(json_dict, f, indent=4)
 
+            self.list_note.clear()
+            self.load(True)
 
     def note_remove(self):
         self.load(False)
