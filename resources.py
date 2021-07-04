@@ -2,7 +2,7 @@ default_note = {"0":{"title":"How to use this app ?", "content":"It's a simply a
 default_new_note = {"title":"New note", "content":"This is my new note."}
 
 
-def count_char(text):
+def _countChar(text):
     res = 0
     text = str(text)
     if not text:
