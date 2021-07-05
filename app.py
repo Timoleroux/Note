@@ -25,8 +25,6 @@ class App(QtWidgets.QWidget):
         self.lw_note_list = QtWidgets.QListWidget()
         self.btn_create_note = QtWidgets.QPushButton("New")
         self.btn_delete_note = QtWidgets.QPushButton("Delete")
-        self.lbl_note_title = QtWidgets.QLabel("Title:")
-        self.lbl_note_content = QtWidgets.QLabel("Content:")
         self.le_note_title = QtWidgets.QLineEdit()
         self.te_note_content = QtWidgets.QTextEdit()
 
@@ -38,9 +36,7 @@ class App(QtWidgets.QWidget):
         self.left_layout.addWidget(self.btn_create_note)
         self.left_layout.addWidget(self.btn_delete_note)
         
-        self.right_layout.addWidget(self.lbl_note_title)
         self.right_layout.addWidget(self.le_note_title)
-        self.right_layout.addWidget(self.lbl_note_content)
         self.right_layout.addWidget(self.te_note_content)
 
     def _componentSettings(self):
@@ -53,6 +49,8 @@ class App(QtWidgets.QWidget):
         self.le_note_title.setDisabled(True)
         self.te_note_content.setDisabled(True)
         self.btn_delete_note.setDisabled(True)
+        self.le_note_title.setPlaceholderText("Title")
+        self.te_note_content.setPlaceholderText("This is the content of my note")
 
     def _load(self, is_load):
         global json_dict
