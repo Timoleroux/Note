@@ -1,7 +1,7 @@
 from PySide6 import QtGui, QtWidgets
 import json
 from resources import default_note, default_new_note
-from resources import _countChar
+from resources import _countChar, LOG
 
 PATH = "C:/Users/timol/OneDrive/Documents/GitHub/Note/data/data.json"
 
@@ -12,12 +12,12 @@ class App(QtWidgets.QWidget):
         self.setMinimumSize(550, 300)
         self.setMaximumSize(825, 450)
         self.setWindowIcon(QtGui.QIcon('C:/Users/timol/OneDrive/Documents/GitHub/Note/data/icon.ico'))
-        self._createComponents()
-        self._addComponents()
-        self._componentSettings()
+        self._components()
         self._load(True)
 
-    def _createComponents(self):
+    def _components(self):
+
+        # --- Create components ---
         self.main_layout = QtWidgets.QHBoxLayout(self)
         self.left_layout = QtWidgets.QVBoxLayout(self)
         self.right_layout = QtWidgets.QVBoxLayout(self)
@@ -28,7 +28,7 @@ class App(QtWidgets.QWidget):
         self.le_note_title = QtWidgets.QLineEdit()
         self.te_note_content = QtWidgets.QTextEdit()
 
-    def _addComponents(self):
+        # --- Add components ---
         self.main_layout.addLayout(self.left_layout)
         self.main_layout.addLayout(self.right_layout)
 
@@ -39,10 +39,10 @@ class App(QtWidgets.QWidget):
         self.right_layout.addWidget(self.le_note_title)
         self.right_layout.addWidget(self.te_note_content)
 
-    def _componentSettings(self):
+        # --- Components settings ---
         self.lw_note_list.itemClicked.connect(self._openNote)
-        self.le_note_title.textChanged.connect(self._saveNote)
-        self.te_note_content.textChanged.connect(self._saveNote)
+        self.le_note_title.textChanged.connect(self._updateNote)
+        self.te_note_content.textChanged.connect(self._updateNote)
         self.btn_delete_note.clicked.connect(self._removeNote)
         self.btn_create_note.clicked.connect(self._createNote)
         self.le_note_title.setMaxLength(35)
@@ -70,11 +70,10 @@ class App(QtWidgets.QWidget):
             for i in json_dict:
                 while not str(note_id) in json_dict:
                     note_id += 1
-
                 self.lw_note_list.addItem(json_dict[str(note_id)]["title"])
                 note_id += 1
 
-    def _getIdWithTitle(self, target_title):
+    def getIdWithTitle(self, target_title):
         global note_id
 
         if target_title != "":
@@ -98,11 +97,9 @@ class App(QtWidgets.QWidget):
         self.le_note_title.setDisabled(False)
         self.te_note_content.setDisabled(False)
         self.btn_delete_note.setDisabled(False)
-        disable_save_func = True
-        self._getIdWithTitle(self.lw_note_list.currentItem().text())
+        self.getIdWithTitle(self.lw_note_list.currentItem().text())
         self.le_note_title.setText(json_dict[note_id]["title"])
         self.te_note_content.setText(json_dict[note_id]["content"])
-        disable_save_func = False
 
     def _createNote(self):
         self._load(False)
@@ -128,11 +125,11 @@ class App(QtWidgets.QWidget):
         with open(PATH, "w") as f:
             json.dump(json_dict, f, indent=4)
 
-    def _saveNote(self):
+    def _updateNote(self):
         new_title = self.le_note_title.text()
         new_content = self.te_note_content.toPlainText()
         
-        if _countChar(new_title) >= 1 and disable_save_func == False:
+        if _countChar(new_title) >= 1:
             self._load(False)
             json_dict.update({note_id:{"title":new_title, "content":new_content}})
 
@@ -144,7 +141,7 @@ class App(QtWidgets.QWidget):
 
     def _removeNote(self):
         self._load(False)
-        self._getIdWithTitle(self.lw_note_list.currentItem().text())
+        self.getIdWithTitle(self.lw_note_list.currentItem().text())
 
         del json_dict[note_id]  # delete the note
         with open(PATH, "w") as f:
