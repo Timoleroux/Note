@@ -1,18 +1,6 @@
 {
     "0": {
-        "title": "How to use this app ?",
-        "content": "It's a simply app of note. All notes are saves in a json file."
-    },
-    "1": {
-        "title": "New note",
-        "content": "IHHHHH"
-    },
-    "2": {
-        "title": "New note",
-        "content": "This is my new note."
-    },
-    "3": {
-        "title": "New note",
-        "content": "This is my new note."
+        "title": "Note A",
+        "content": ""
     }
 }
