@@ -31,6 +31,12 @@ def createNote(note_id, note_title, note_content):
     with open(PATH, "w") as f:
         json.dump(json_dict, f, indent=4)
 
+def updateNote(note_id, note_content):
+    dict_notes = dictNotes()
+    dict_notes.update({note_id:{"content":note_content}})
+    with open(PATH, "w") as f:
+        json.dump(dict_notes, f, indent=4)
+
 def deleteNote(item):
     dict_notes = dictNotes()
     del dict_notes[getIdWithTitle(item)]

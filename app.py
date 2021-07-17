@@ -75,8 +75,9 @@ class App(QtWidgets.QWidget):
         
 
     def updateNote(self):
-        dict_note = fm.dictNotes
         note_id = fm.getIdWithTitle(self.le_note_title.text())
+        note_content = self.te_note_content.toPlainText()
+        fm.updateNote(note_id, note_content)
 
     def removeNote(self):
 
