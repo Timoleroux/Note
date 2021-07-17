@@ -1,9 +1,5 @@
 from PySide6 import QtGui, QtWidgets
-import json
-from resources import default_note, default_new_note
-from resources import _countChar, LOG
-
-PATH = "C:/Users/timol/OneDrive/Documents/GitHub/Note/data/data.json"
+import filemanager as fm
 
 class App(QtWidgets.QWidget):
     def __init__(self):
@@ -13,7 +9,7 @@ class App(QtWidgets.QWidget):
         self.setMaximumSize(825, 450)
         self.setWindowIcon(QtGui.QIcon('C:/Users/timol/OneDrive/Documents/GitHub/Note/data/icon.ico'))
         self._components()
-        self._load(True)
+        self.load()
 
     def _components(self):
 
@@ -25,7 +21,7 @@ class App(QtWidgets.QWidget):
         self.lw_note_list = QtWidgets.QListWidget()
         self.btn_create_note = QtWidgets.QPushButton("New")
         self.btn_delete_note = QtWidgets.QPushButton("Delete")
-        self.le_note_title = QtWidgets.QLineEdit()
+        self.le_note_title = QtWidgets.QLabel()
         self.te_note_content = QtWidgets.QTextEdit()
 
         # --- Add components ---
@@ -40,123 +36,60 @@ class App(QtWidgets.QWidget):
         self.right_layout.addWidget(self.te_note_content)
 
         # --- Components settings ---
-        self.lw_note_list.itemClicked.connect(self._openNote)
-        self.le_note_title.textChanged.connect(self._updateNote)
-        self.te_note_content.textChanged.connect(self._updateNote)
-        self.btn_delete_note.clicked.connect(self._removeNote)
-        self.btn_create_note.clicked.connect(self._createNote)
-        self.le_note_title.setMaxLength(35)
-        self.le_note_title.setDisabled(True)
-        self.te_note_content.setDisabled(True)
-        self.btn_delete_note.setDisabled(True)
-        self.le_note_title.setPlaceholderText("Title")
-        self.te_note_content.setPlaceholderText("This is the content of my note")
+        self.lw_note_list.itemClicked.connect(self.openNote)
+        self.te_note_content.textChanged.connect(self.updateNote)
+        self.btn_delete_note.clicked.connect(self.removeNote)
+        self.btn_create_note.clicked.connect(self.createNote)
+        self.te_note_content.setPlaceholderText("This is my note.")
 
-    def _load(self, is_load):
-        global json_dict
-
-        with open(PATH, "r") as f:
-            json_dict = json.load(f)
-             
-        if not json_dict or bool(json_dict) == False:  # if there isn't note, create one
-            with open(PATH, "w") as f:
-                json.dump(default_note, f, indent=4)
-            with open(PATH, "r") as f:
-                json_dict = json.load(f)
-
-        if is_load == True:
-            note_id = 0
-
-            for i in json_dict:
-                while not str(note_id) in json_dict:
+    def load(self):
+        dict_notes = fm.dictNotes()
+        note_id = 0
+        for i in dict_notes:
+                while not str(note_id) in dict_notes:
                     note_id += 1
-                self.lw_note_list.addItem(json_dict[str(note_id)]["title"])
+                self.lw_note_list.addItem(dict_notes[str(note_id)]["title"])
                 note_id += 1
 
-    def getIdWithTitle(self, target_title):
-        global note_id
+    def openNote(self):
+        self.le_note_title.setText(fm.dictNotes()[fm.getIdWithTitle(self.lw_note_list.currentItem().text())]["title"])
+        self.te_note_content.setText(fm.dictNotes()[fm.getIdWithTitle(self.lw_note_list.currentItem().text())]["content"])
 
-        if target_title != "":
-
-            self._load(False)
-            goal = None
-            note_id = 0
-
-            while goal != target_title:
-
-                if str(note_id) in json_dict:
-                    goal = str(json_dict[str(note_id)]["title"])
-
-                note_id += 1
-        note_id -= 1
-        note_id = str(note_id)
-
-    def _openNote(self):
-        global disable_save_func
-
-        self.le_note_title.setDisabled(False)
-        self.te_note_content.setDisabled(False)
-        self.btn_delete_note.setDisabled(False)
-        self.getIdWithTitle(self.lw_note_list.currentItem().text())
-        self.le_note_title.setText(json_dict[note_id]["title"])
-        self.te_note_content.setText(json_dict[note_id]["content"])
-
-    def _createNote(self):
-        self._load(False)
+    def createNote(self):
         
-        json_keys_list = list(json_dict.keys()) # get all the ID of the notes
-        id_new_note = json_keys_list[-1]  # get the last ID
-        id_new_note = int(id_new_note)
-        id_new_note += 1  # get the next ID 
+        all_json_ids = list(fm.dictNotes().keys())
 
-        json_dict.update({id_new_note:default_new_note})  # add the new note the json_dict
+        if all_json_ids == []:
+            id_new_note = 0
+        else:
+            id_new_note = all_json_ids[-1]
+            id_new_note = int(id_new_note) + 1
+            
+        note_title = QtWidgets.QInputDialog.getText(self, ' ', 'Enter the title of the note:')
+        note_title = str(list(note_title)[0])
+        if note_title == "":
+            note_title = "New note"
+        fm.createNote(str(id_new_note), note_title, "")
+        self.lw_note_list.addItem(note_title)
+            
+        
 
-        with open(PATH, "w") as f:
-            json.dump(json_dict, f, indent=4)  # add the note in the json file
-               
-        self.lw_note_list.addItem(default_new_note["title"]) # add the title in the list_note
-         
-        new_content = self.te_note_content.toPlainText()
+    def updateNote(self):
+        dict_note = fm.dictNotes
+        note_id = fm.getIdWithTitle(self.le_note_title.text())
+
+    def removeNote(self):
+
         try:
-            json_dict.update({note_id:{"title":self.le_note_title.text(), "content":new_content}})
-        except:
-            print("ERROR")
+            fm.deleteNote(self.lw_note_list.currentItem().text())
+            for item in self.lw_note_list.selectedItems():
+                self.lw_note_list.takeItem(self.lw_note_list.row(item))
 
-        with open(PATH, "w") as f:
-            json.dump(json_dict, f, indent=4)
+            self.le_note_title.clear()
+            self.te_note_content.clear()
 
-    def _updateNote(self):
-        new_title = self.le_note_title.text()
-        new_content = self.te_note_content.toPlainText()
-        
-        if _countChar(new_title) >= 1:
-            self._load(False)
-            json_dict.update({note_id:{"title":new_title, "content":new_content}})
-
-            with open(PATH, "w") as f:
-                json.dump(json_dict, f, indent=4)
-
-            self.lw_note_list.clear()
-            self._load(True)
-
-    def _removeNote(self):
-        self._load(False)
-        self.getIdWithTitle(self.lw_note_list.currentItem().text())
-
-        del json_dict[note_id]  # delete the note
-        with open(PATH, "w") as f:
-                json.dump(json_dict, f, indent=4)  # update the json file
-
-        list_items = self.lw_note_list.selectedItems()
-        for item in list_items:
-            self.lw_note_list.takeItem(self.lw_note_list.row(item))  # remove the note title in the list_note
-
-        self.le_note_title.clear()
-        self.te_note_content.clear()
-        self.le_note_title.setDisabled(True)
-        self.te_note_content.setDisabled(True)
-        self.btn_delete_note.setDisabled(True)
-        self.lw_note_list.selectionModel().clear()
+        except AttributeError:
+            return
 
 app = QtWidgets.QApplication([])
 win = App()
