@@ -21,6 +21,7 @@ class App(QtWidgets.QWidget):
         self.lw_note_list = QtWidgets.QListWidget()
         self.btn_create_note = QtWidgets.QPushButton("New")
         self.btn_delete_note = QtWidgets.QPushButton("Delete")
+        self.btn_save_note = QtWidgets.QPushButton("Save")
         self.le_note_title = QtWidgets.QLabel()
         self.te_note_content = QtWidgets.QTextEdit()
 
@@ -34,10 +35,11 @@ class App(QtWidgets.QWidget):
         
         self.right_layout.addWidget(self.le_note_title)
         self.right_layout.addWidget(self.te_note_content)
+        self.right_layout.addWidget(self.btn_save_note)
 
         # --- Components settings ---
         self.lw_note_list.itemClicked.connect(self.openNote)
-        self.te_note_content.textChanged.connect(self.updateNote)
+        self.btn_save_note.clicked.connect(self.saveNote)
         self.btn_delete_note.clicked.connect(self.removeNote)
         self.btn_create_note.clicked.connect(self.createNote)
         self.te_note_content.setPlaceholderText("This is my note.")
@@ -52,12 +54,13 @@ class App(QtWidgets.QWidget):
                 note_id += 1
 
     def openNote(self):
+        dict_note = fm.dictNotes()
         self.le_note_title.setText(fm.dictNotes()[fm.getIdWithTitle(self.lw_note_list.currentItem().text())]["title"])
-        self.te_note_content.setText(fm.dictNotes()[fm.getIdWithTitle(self.lw_note_list.currentItem().text())]["content"])
+        self.te_note_content.setText(dict_note[fm.getIdWithTitle(self.lw_note_list.currentItem().text())]["content"])
 
     def createNote(self):
         
-        all_json_ids = list(fm.dictNotes().keys())
+        all_json_ids = list(fm.dictNotes().keys()) 
 
         if all_json_ids == []:
             id_new_note = 0
@@ -68,16 +71,17 @@ class App(QtWidgets.QWidget):
         note_title = QtWidgets.QInputDialog.getText(self, ' ', 'Enter the title of the note:')
         note_title = str(list(note_title)[0])
         if note_title == "":
-            note_title = "New note"
+            return 0
         fm.createNote(str(id_new_note), note_title, "")
         self.lw_note_list.addItem(note_title)
             
         
 
-    def updateNote(self):
+    def saveNote(self):
         note_id = fm.getIdWithTitle(self.le_note_title.text())
+        note_title = self.le_note_title.text()
         note_content = self.te_note_content.toPlainText()
-        fm.updateNote(note_id, note_content)
+        fm.updateNote(note_id, note_title, note_content)
 
     def removeNote(self):
 
