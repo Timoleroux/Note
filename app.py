@@ -10,6 +10,7 @@ class App(QtWidgets.QWidget):
         self.setWindowIcon(QtGui.QIcon('C:/Users/timol/OneDrive/Documents/GitHub/Note/data/icon.ico'))
         self._components()
         self.load()
+        print('OK')
 
     def _components(self):
 
@@ -43,6 +44,10 @@ class App(QtWidgets.QWidget):
         self.btn_delete_note.clicked.connect(self.removeNote)
         self.btn_create_note.clicked.connect(self.createNote)
         self.te_note_content.setPlaceholderText("This is my note.")
+        self.te_note_content.textChanged.connect(self.func)
+    
+    def func(self):
+        self.te_note_content.setDisabled(False)
 
     def load(self):
         dict_notes = fm.dictNotes()
@@ -57,9 +62,11 @@ class App(QtWidgets.QWidget):
         dict_note = fm.dictNotes()
         self.le_note_title.setText(fm.dictNotes()[fm.getIdWithTitle(self.lw_note_list.currentItem().text())]["title"])
         self.te_note_content.setText(dict_note[fm.getIdWithTitle(self.lw_note_list.currentItem().text())]["content"])
+        self.btn_save_note.setDisabled(True)
 
     def createNote(self):
         
+        self.saveNote()
         all_json_ids = list(fm.dictNotes().keys()) 
 
         if all_json_ids == []:
@@ -74,7 +81,11 @@ class App(QtWidgets.QWidget):
             return 0
         fm.createNote(str(id_new_note), note_title, "")
         self.lw_note_list.addItem(note_title)
-            
+
+        if self.le_note_title.text() == False:
+            dict_note = fm.dictNotes()
+            self.le_note_title.setText(note_title)
+            self.te_note_content.setText("")
         
 
     def saveNote(self):
